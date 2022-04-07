@@ -27,6 +27,7 @@ except:
     db_ = raw_input("Please enter the db name you want to backup: ")
     AWS_ACCESS_KEY_ID = raw_input("Please enter your ACCESS ID: ")
     AWS_SECRET_ACCESS_KEY = raw_input("Please enter your ACCESS KEY: ")
+    BUCKET_NAME = raw_input("Please enter your s3 bucket name: ")
     print("cool, everythings configured please run the script again")
     
 
@@ -36,7 +37,8 @@ except:
          "AWS_SECRET_ACCESS_KEY="+AWS_SECRET_ACCESS_KEY+" \n",
          "db_user="+db_user+"\n",
          "db_pass="+db_pass+"\n",
-         "db_="+db_+"\n"]
+         "db_="+db_+"\n",
+         "bucket_name="+BUCKET_NAME+"\n"]
     file1.writelines(L)
     file1.close()
     exit()
@@ -63,6 +65,7 @@ DB_USER =str(os.getenv('db_user'))
 DB_USER_PASSWORD = str(os.getenv('db_pass'))
 #DB_NAME = '/backup/dbnameslist.txt'
 DB_NAME =str(os.getenv('db_'))
+bucket_name = str(os.getenv('bucket_name'))
 BACKUP_PATH = '/backup'
 s3StagingPath = '/s3Stage'
 # Getting current DateTime to create the separate backup folder like "20180817-123433".
@@ -138,7 +141,7 @@ load_dotenv()
 
 # name of the file and bucket to upload to 
 file_name = ''+today+hostName+'Backup.zip' 
-bucket_name = 'rearview-backups' 
+
 
 # Upload to S3 Bucket
 s3_client = boto3.client(
