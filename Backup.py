@@ -28,7 +28,7 @@ except:
     AWS_ACCESS_KEY_ID = raw_input("Please enter your ACCESS ID: ")
     AWS_SECRET_ACCESS_KEY = raw_input("Please enter your ACCESS KEY: ")
     print("cool, everythings configured please run the script again")
-    exit()
+    
 
     # Create and populate .env 
     file1 = open(".env", "w")
@@ -39,6 +39,7 @@ except:
          "db_="+db_+"\n"]
     file1.writelines(L)
     file1.close()
+    exit()
 
 
 
