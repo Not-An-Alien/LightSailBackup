@@ -155,4 +155,25 @@ print("Backup to S3 Complete")
 print("Cleaning up")
 shutil.rmtree(BACKUP_PATH)
 shutil.rmtree(s3StagingPath)
+
+# Delete backups older than x 
+# +today+hostName+'Backup'
+session = Session(aws_access_key_id=os.getenv('AWS_ACCESS_KEY_ID'),
+                  aws_secret_access_key=os.getenv('AWS_SECRET_ACCESS_KEY')
+
+# s3_client = session.client('s3')
+s3_resource = session.resource('s3')
+my_bucket = s3_resource.Bucket(os.getenv('bucket_name'))
+
+response = my_bucket.delete_objects(
+    Delete={
+        'Objects': [
+            {
+                'Key': '+today+hostName+'Backup'   # the_name of_your_file
+            }
+        ]
+    }
+)
+
 print("Done!")
+
