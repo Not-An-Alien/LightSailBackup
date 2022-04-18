@@ -156,4 +156,3 @@ print("Cleaning up")
 shutil.rmtree(BACKUP_PATH)
 shutil.rmtree(s3StagingPath)
 print("Done!")
-
