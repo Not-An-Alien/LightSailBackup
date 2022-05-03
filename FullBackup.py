@@ -189,7 +189,7 @@ for file in my_bucket.objects.all():
    
             
     else:
-        print("Not a Master-Tracker Backup")
+        print("Not a "+hostName+" Backup")
     
 
 
