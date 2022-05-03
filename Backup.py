@@ -1,5 +1,5 @@
 #!/usr/bin/python
-from datetime import date, timedelta
+from datetime import date, timedelta, datetime
 from email.utils import encode_rfc2231
 import boto3
 import json
@@ -7,7 +7,7 @@ import socket
 import subprocess
 import os
 import time
-import datetime
+import re
 import pipes
 import zipfile
 import shutil
@@ -28,6 +28,7 @@ except:
     AWS_ACCESS_KEY_ID = raw_input("Please enter your ACCESS ID: ")
     AWS_SECRET_ACCESS_KEY = raw_input("Please enter your ACCESS KEY: ")
     BUCKET_NAME = raw_input("Please enter your s3 bucket name: ")
+    Retention = raw_input("Please enter how many days of backups you would like to keep, EX: 28 would keep 28 days worth of backups from todays date")
     print("cool, everythings configured please run the script again")
     
 
@@ -66,6 +67,7 @@ DB_USER_PASSWORD = str(os.getenv('db_pass'))
 #DB_NAME = '/backup/dbnameslist.txt'
 DB_NAME =str(os.getenv('db_'))
 bucket_name = str(os.getenv('bucket_name'))
+retention_days = int(os.getenv('Retention'))
 BACKUP_PATH = '/backup'
 s3StagingPath = '/s3Stage'
 # Getting current DateTime to create the separate backup folder like "20180817-123433".
@@ -155,25 +157,44 @@ print("Backup to S3 Complete")
 print("Cleaning up")
 shutil.rmtree(BACKUP_PATH)
 shutil.rmtree(s3StagingPath)
+# Remove Backups older than x 
+backupName = str(today+hostName+'Backup'+'.zip')
+now = date.today()
+retention_target = now - timedelta(days=retention_days)
+subString = 'Master-TrackerBackup'
+s3 = boto3.resource('s3')
 
-# Delete backups older than x 
-# +today+hostName+'Backup'
-session = Session(aws_access_key_id=os.getenv('AWS_ACCESS_KEY_ID'),
-                  aws_secret_access_key=os.getenv('AWS_SECRET_ACCESS_KEY')
+my_bucket = s3.Bucket(bucket_name)
 
-# s3_client = session.client('s3')
-s3_resource = session.resource('s3')
-my_bucket = s3_resource.Bucket(os.getenv('bucket_name'))
+for file in my_bucket.objects.all():
+    currentFile = str(file.key)
+    if subString in currentFile:
+        print("Found!, Checking against retention-date")
+        # print(currentFile)
+        dateOfFile = datetime.strptime(str(file.last_modified.date()), "%Y-%m-%d").date()
+        # print(dateOfFile)
+        dateOfTarget = datetime.strptime(str(retention_target), "%Y-%m-%d").date()
+        print(dateOfTarget)
+        print(dateOfFile)
+        
+        if (dateOfFile < dateOfTarget):
+            print("File is older than target date")
+            s3 = boto3.resource("s3")
+            obj = s3.Object(bucket_name, file.key)
+            print(obj)
+            obj.delete()
+        else:
+            print("File is newer than target date")
+   
+   
+            
+    else:
+        print("Not a Master-Tracker Backup")
+    
 
-response = my_bucket.delete_objects(
-    Delete={
-        'Objects': [
-            {
-                'Key': '+today+hostName+'Backup'   # the_name of_your_file
-            }
-        ]
-    }
-)
+
+
+
 
 print("Done!")
 
